@@ -43,3 +43,4 @@ PWA che calcola il tempo di cottura per l'uovo perfetto in base ad alcuni parame
 ## Registro
 - **2026-11-11** – Prima versione (v1): sezioni Cottura e Freschezza, timer, funzionamento offline, installazione e workflow di pubblicazione. Verificata in Chrome headless sotto `/uova/`, anche offline.
 - **2026-11-11** – Primo commit su `pippotorre/uova`, con il file `CNAME` per il dominio `uova.entratadisicurezza.com`. Il record CNAME su Tophost è stato creato dall'utente.
+- **2026-11-11** – v2: tolte le icone ❄️ e 🏠 accanto a «frigo» e «ambiente» nelle sezioni Cottura e Freschezza. Cache del service worker portata a `uova-v2`.

@@ -1,5 +1,5 @@
 /* Service worker di "Uova" – cambia CACHE a ogni rilascio */
-const CACHE = 'uova-v1';
+const CACHE = 'uova-v2';
 const ASSETS = [
   './',
   './index.html',
