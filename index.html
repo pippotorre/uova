@@ -128,7 +128,14 @@
     <!-- ===================== FRESCHEZZA ===================== -->
     <section id="view-freschezza" class="view" aria-labelledby="t-fresch">
       <h1 id="t-fresch" class="view-title">È ancora fresco?</h1>
-      <p class="lead">Il test del galleggiamento: metti l'uovo in un bicchiere d'acqua fredda e guarda come si posiziona.</p>
+      <p class="lead">Parti dalla data sulla confezione, poi conferma con il test del galleggiamento: metti l'uovo in un bicchiere d'acqua fredda e guarda come si posiziona.</p>
+
+      <div class="card pkg-card">
+        <h2><label for="bestBefore">Data di scadenza sulla confezione</label></h2>
+        <p class="note">È la data «da consumarsi preferibilmente entro»: per legge corrisponde a 28 giorni dalla deposizione.</p>
+        <input type="date" id="bestBefore">
+        <p class="pkg-status" id="pkgNote"></p>
+      </div>
 
       <div class="card hero-glass">
         <svg id="glass" viewBox="0 0 260 300" role="img" aria-label="Uovo in un bicchiere d'acqua"></svg>
@@ -155,11 +162,6 @@
         <div class="aircell">
           <div class="aircell-head"><span>Aria nella camera d'aria</span><b id="airVal"></b></div>
           <div class="bar"><div id="airBar"></div></div>
-        </div>
-        <div class="pkg">
-          <label for="bestBefore">Hai la confezione? Inserisci la data «da consumarsi preferibilmente entro»:</label>
-          <input type="date" id="bestBefore">
-          <p class="note" id="pkgNote">Per legge è fissata a 28 giorni dalla deposizione: da lì ricavo l'età dell'uovo.</p>
         </div>
       </div>
 
