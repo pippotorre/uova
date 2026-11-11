@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Uova – cottura perfetta e freschezza</title>
+  <meta name="description" content="Calcola il tempo di cottura per l'uovo perfetto e verifica se un uovo è fresco.">
+  <meta name="theme-color" content="#F5A623">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Uova">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./icons/icon-192.png" alt="" width="34" height="34">
+      <span>Uova</span>
+    </div>
+    <button id="installBtn" class="btn btn-small" hidden>Installa app</button>
+  </header>
+
+  <div id="updateBanner" class="banner" hidden>
+    <span>Nuova versione disponibile</span>
+    <button id="updateBtn" class="btn btn-small">Aggiorna</button>
+  </div>
+  <div id="iosHint" class="banner banner-soft" hidden>
+    <span>Per installare: tocca <b>Condividi</b> e poi <b>Aggiungi a schermata Home</b>.</span>
+    <button class="btn-link" data-close="iosHint" aria-label="Chiudi">✕</button>
+  </div>
+
+  <main>
+    <!-- ===================== COTTURA ===================== -->
+    <section id="view-cottura" class="view active" aria-labelledby="t-cottura">
+      <h1 id="t-cottura" class="view-title">Cottura perfetta</h1>
+      <p class="lead">Regola i parametri: l'uovo nella sezione mostra come sarà il tuorlo.</p>
+
+      <div class="card hero">
+        <svg id="cookEgg" viewBox="0 0 220 240" role="img" aria-label="Sezione dell'uovo cotto"></svg>
+        <div class="result">
+          <div class="result-label">Tempo di cottura</div>
+          <div id="cookTime" class="result-time">--:--</div>
+          <div id="cookName" class="result-name"></div>
+          <div id="cookWarn" class="warn" hidden></div>
+          <button id="startTimer" class="btn btn-primary">▶ Avvia timer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctrl-head">
+          <h2>Grado di cottura</h2>
+          <span id="doneVal" class="pill"></span>
+        </div>
+        <div class="seg" id="donePresets" role="group" aria-label="Preset grado di cottura">
+          <button data-done="64">Alla coque</button>
+          <button data-done="70">Barzotto</button>
+          <button data-done="80">Sodo</button>
+        </div>
+        <input type="range" id="done" min="62" max="84" step="1" value="80" aria-label="Temperatura finale del tuorlo">
+        <div class="scale"><span>tuorlo liquido</span><span>tuorlo compatto</span></div>
+      </div>
+
+      <div class="card">
+        <div class="ctrl-head">
+          <h2>Dimensione dell'uovo</h2>
+          <span id="sizeVal" class="pill"></span>
+        </div>
+        <div class="seg" id="sizePresets" role="group" aria-label="Categoria di peso">
+          <button data-w="50">S</button>
+          <button data-w="58">M</button>
+          <button data-w="68">L</button>
+          <button data-w="76">XL</button>
+        </div>
+        <input type="range" id="weight" min="40" max="85" step="1" value="58" aria-label="Peso dell'uovo in grammi">
+        <div class="scale"><span>40 g</span><span>85 g</span></div>
+      </div>
+
+      <div class="card">
+        <div class="ctrl-head">
+          <h2>Temperatura iniziale</h2>
+          <span id="tempVal" class="pill"></span>
+        </div>
+        <div class="seg" id="tempPresets" role="group" aria-label="Provenienza dell'uovo">
+          <button data-t="5">❄️ Dal frigo</button>
+          <button data-t="20">🏠 Ambiente</button>
+        </div>
+        <div class="row-ctrl">
+          <svg id="thermo" viewBox="0 0 30 90" class="mini" aria-hidden="true"></svg>
+          <input type="range" id="temp" min="2" max="28" step="1" value="5" aria-label="Temperatura iniziale dell'uovo in gradi">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctrl-head">
+          <h2>Altitudine</h2>
+          <span id="altVal" class="pill"></span>
+        </div>
+        <svg id="mountain" viewBox="0 0 300 90" class="wide" aria-hidden="true"></svg>
+        <input type="range" id="alt" min="0" max="4000" step="50" value="0" aria-label="Altitudine in metri">
+        <p id="boilNote" class="note"></p>
+      </div>
+
+      <div class="card">
+        <h2>Come gustarlo</h2>
+        <p class="note" id="recipeIntro"></p>
+        <div id="recipes" class="recipes"></div>
+      </div>
+
+      <details class="card acc">
+        <summary><h2>Consigli di cottura</h2></summary>
+        <ol class="tips">
+          <li><b>Acqua già in bollore.</b> Il tempo calcolato parte da quando immergi l'uovo nell'acqua che bolle: calalo piano con un cucchiaio.</li>
+          <li><b>Bollore leggero, non tumultuoso.</b> Abbassa un po' la fiamma: l'uovo non sbatte sul fondo e il guscio non si crepa.</li>
+          <li><b>Una crepa?</b> Un cucchiaio di aceto nell'acqua aiuta l'albume a rapprendersi subito e a non uscire.</li>
+          <li><b>Bagno di ghiaccio.</b> Per barzotto e sodo, passa l'uovo in acqua e ghiaccio per 2–3 minuti: ferma la cottura e si sguscia meglio.</li>
+          <li><b>Uova di qualche giorno.</b> Le uova freschissime si sgusciano male: per le sode usa uova di 1–2 settimane (vedi la sezione Freschezza).</li>
+          <li><b>Anello verdastro attorno al tuorlo?</b> È il segno di una cottura troppo lunga: non fa male, ma il sapore ne risente.</li>
+          <li><b>Più uova insieme.</b> Usa una pentola capiente: se l'acqua smette di bollire a lungo, aggiungi circa 30 secondi.</li>
+        </ol>
+        <p class="note">I tempi sono stime basate su un modello fisico della trasmissione del calore: pentole e fornelli diversi possono richiedere piccoli aggiustamenti.</p>
+      </details>
+    </section>
+
+    <!-- ===================== FRESCHEZZA ===================== -->
+    <section id="view-freschezza" class="view" aria-labelledby="t-fresch">
+      <h1 id="t-fresch" class="view-title">È ancora fresco?</h1>
+      <p class="lead">Il test del galleggiamento: metti l'uovo in un bicchiere d'acqua fredda e guarda come si posiziona.</p>
+
+      <div class="card hero-glass">
+        <svg id="glass" viewBox="0 0 260 300" role="img" aria-label="Uovo in un bicchiere d'acqua"></svg>
+        <div id="verdict" class="verdict"></div>
+      </div>
+
+      <div class="card">
+        <h2>Cosa vedi nel bicchiere?</h2>
+        <p class="note">Tocca la posizione che assomiglia al tuo uovo.</p>
+        <div class="positions" id="positions"></div>
+      </div>
+
+      <div class="card">
+        <div class="ctrl-head">
+          <h2>Giorni dalla deposizione</h2>
+          <span id="daysVal" class="pill"></span>
+        </div>
+        <input type="range" id="days" min="0" max="50" step="1" value="3" aria-label="Giorni dalla deposizione">
+        <div class="scale"><span>appena deposto</span><span>50 giorni</span></div>
+        <div class="seg" id="storage" role="group" aria-label="Conservazione">
+          <button data-s="frigo">❄️ In frigo</button>
+          <button data-s="ambiente">🏠 A temperatura ambiente</button>
+        </div>
+        <div class="aircell">
+          <div class="aircell-head"><span>Aria nella camera d'aria</span><b id="airVal"></b></div>
+          <div class="bar"><div id="airBar"></div></div>
+        </div>
+        <div class="pkg">
+          <label for="bestBefore">Hai la confezione? Inserisci la data «da consumarsi preferibilmente entro»:</label>
+          <input type="date" id="bestBefore">
+          <p class="note" id="pkgNote">Per legge è fissata a 28 giorni dalla deposizione: da lì ricavo l'età dell'uovo.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>La prova del piatto</h2>
+        <p class="note">Rompi l'uovo in un piatto piano: più è fresco, più il tuorlo è alto e l'albume compatto. La grafica segue i giorni impostati sopra.</p>
+        <svg id="plate" viewBox="0 0 300 150" class="wide" role="img" aria-label="Uovo rotto in un piatto"></svg>
+        <p id="plateNote" class="note center"></p>
+      </div>
+
+      <details class="card acc">
+        <summary><h2>Altri controlli</h2></summary>
+        <ul class="tips">
+          <li><b>Il naso non sbaglia.</b> Un odore sulfureo (di uovo marcio) appena rotto: buttalo, qualunque sia il risultato del test.</li>
+          <li><b>Il guscio.</b> Crepato, viscido o con macchie polverose: meglio scartarlo.</li>
+          <li><b>Agitalo vicino all'orecchio.</b> Se senti lo sciabordio, l'interno è diventato acquoso e la camera d'aria è grande: è vecchio.</li>
+          <li><b>Il codice sul guscio.</b> La prima cifra dice l'allevamento (0 biologico, 1 all'aperto, 2 a terra, 3 in gabbia), poi il paese (IT) e l'allevamento.</li>
+          <li><b>«Extra».</b> La dicitura sulla confezione è consentita solo fino al 9° giorno dalla deposizione.</li>
+        </ul>
+        <p class="note">Il galleggiamento misura l'età dell'uovo, non la presenza di batteri: conserva le uova in frigo, non lavarle e cuoci bene quelle più vecchie.</p>
+      </details>
+    </section>
+  </main>
+
+  <!-- ===================== TIMER ===================== -->
+  <div id="timer" class="timer" hidden role="dialog" aria-modal="true" aria-labelledby="timerTitle">
+    <div class="timer-box">
+      <h2 id="timerTitle">Uovo in cottura</h2>
+      <svg id="pot" viewBox="0 0 260 260" aria-hidden="true"></svg>
+      <div id="timerLeft" class="timer-left" aria-live="polite">--:--</div>
+      <div id="timerMsg" class="timer-msg"></div>
+      <div class="timer-actions">
+        <button id="timerPause" class="btn">Pausa</button>
+        <button id="timerStop" class="btn btn-primary">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="Sezioni">
+    <button class="tab active" data-view="cottura" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z M2 10h20 M9 6c0-1 1-1 1-2 M14 6c0-1 1-1 1-2"/></svg>
+      <span>Cottura</span>
+    </button>
+    <button class="tab" data-view="freschezza">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l-1.5 17a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z M6.5 9h11 M12 12.5c1.7 0 2.6 1.6 2.6 3.1S13.6 18.5 12 18.5 9.4 17.1 9.4 15.6 10.3 12.5 12 12.5z"/></svg>
+      <span>Freschezza</span>
+    </button>
+  </nav>
+
+  <script src="./app.js"></script>
+</body>
+</html>
