@@ -309,7 +309,7 @@ document.addEventListener('visibilitychange', async () => {
 /* =========================================================
    FRESCHEZZA
    ========================================================= */
-const fresh = { days: 3, realDays: 3, storage: 'frigo', entered: false };
+const fresh = { days: 3, storage: 'frigo' };
 const AMBIENT_FACTOR = 2.5; // a temperatura ambiente l'uovo invecchia circa 2–3 volte più in fretta
 
 const STAGES = [
@@ -324,27 +324,6 @@ const STAGES = [
   { maxE: Infinity, ref: 42, label: 'Galleggia', cls: 'v-bad', title: 'Meglio non mangiarlo',
     text: 'Galleggia: la camera d\'aria è molto grande e l\'uovo è vecchio. Buttalo senza romperlo in cucina.' },
 ];
-
-const today = () => { const d = new Date(); d.setHours(12, 0, 0, 0); return d; };
-const addDays = (d, n) => new Date(d.getTime() + n * 864e5);
-const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const longDate = d => d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-
-/* riferimento alla data di scadenza (deposizione + 28 giorni) */
-function bbInfo() {
-  const left = 28 - fresh.realDays;
-  const dateText = longDate(addDays(today(), left));
-  let status, cls, advice = '';
-  if (left > 1) status = `mancano ${left} giorni`;
-  else if (left === 1) status = 'scade domani';
-  else if (left === 0) status = 'scade oggi';
-  else status = `scaduto da ${-left === 1 ? '1 giorno' : -left + ' giorni'}`;
-  cls = left >= 7 ? 'ok' : left >= 0 ? 'mid' : 'bad';
-  if (left < 0) advice = ' Superata la data, usalo solo se supera il test e l\'odore è normale, ben cotto e al più presto.';
-  else if (left < 7) advice = ' Usalo nei prossimi giorni, preferibilmente ben cotto.';
-  if (fresh.storage === 'ambiente') advice += ' Fuori dal frigo invecchia più in fretta di quanto dice la data.';
-  return { left, dateText, status, cls, advice };
-}
 
 const effAge = () => fresh.days * (fresh.storage === 'ambiente' ? AMBIENT_FACTOR : 1);
 const stageOf = e => STAGES.findIndex(s => e < s.maxE);
@@ -425,13 +404,7 @@ function updateFresh() {
   const s = STAGES[st];
   $('#glass').innerHTML = glassMarkup(e, { id: 'main' });
   $('#verdict').className = 'verdict ' + s.cls;
-  const bb = bbInfo();
-  $('#verdict').innerHTML = `<b>${s.title}</b><p>${s.text}</p><p class="bb"><b class="pkg-status ${bb.cls}" style="display:inline;font-size:inherit">${fresh.entered ? 'Scadenza' : 'Scadenza stimata'}: ${bb.dateText}</b> · ${bb.status}.${bb.advice}</p>`;
-  const note = $('#pkgNote');
-  note.className = 'pkg-status ' + (fresh.entered ? bb.cls : '');
-  note.textContent = fresh.entered
-    ? `Deposto circa ${fresh.realDays === 1 ? '1 giorno' : fresh.realDays + ' giorni'} fa · ${bb.left > 1 ? bb.status + ' alla scadenza' : bb.status}.${fresh.realDays <= 9 ? ' È ancora nel periodo «extra».' : ''}`
-    : `Data non inserita: uso i giorni impostati più sotto (scadenza stimata ${bb.dateText}).`;
+  $('#verdict').innerHTML = `<b>${s.title}</b><p>${s.text}</p>`;
   $('#daysVal').textContent = fresh.days === 1 ? '1 giorno' : `${fresh.days} giorni`;
   const mm = airMM(e);
   $('#airVal').textContent = `≈ ${fmt1(mm)} mm`;
@@ -441,13 +414,8 @@ function updateFresh() {
   drawPlate(e);
 }
 
-function setDays(d, fromDate = false) {
-  fresh.realDays = Math.round(d);
-  fresh.days = clamp(fresh.realDays, 0, 50);
-  if (!fromDate) {
-    fresh.entered = false;
-    $('#bestBefore').value = '';
-  }
+function setDays(d) {
+  fresh.days = clamp(Math.round(d), 0, 50);
   const el = $('#days'); el.value = fresh.days; setRangeFill(el);
   updateFresh();
 }
@@ -465,17 +433,17 @@ $('#days').addEventListener('input', e => setDays(+e.target.value));
 $$('#storage button').forEach(b => b.addEventListener('click', () => { fresh.storage = b.dataset.s; updateFresh(); }));
 
 $('#bestBefore').addEventListener('change', e => {
-  if (!e.target.value) { setDays(fresh.days); return; }
+  const note = $('#pkgNote');
+  if (!e.target.value) return;
   const bb = new Date(e.target.value + 'T12:00:00');
-  const days = Math.round((today() - addDays(bb, -28)) / 864e5);
-  if (days < 0) {
-    const note = $('#pkgNote');
-    note.className = 'pkg-status bad';
-    note.textContent = 'La data è più lontana di 28 giorni da oggi: controlla di averla inserita bene.';
-    return;
-  }
-  fresh.entered = true;
-  setDays(days, true);
+  const laid = new Date(bb.getTime() - 28 * 864e5);
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const days = Math.round((today - laid) / 864e5);
+  if (days < 0) { note.textContent = 'La data è più lontana di 28 giorni: controlla di averla inserita bene.'; return; }
+  if (days > 50) note.textContent = `Deposto circa ${days} giorni fa: ben oltre la data consigliata.`;
+  else if (days > 28) note.textContent = `Deposto circa ${days} giorni fa: la data «preferibilmente entro» è superata.`;
+  else note.textContent = `Deposto circa ${days} giorni fa (la data «entro» è a 28 giorni dalla deposizione).${days <= 9 ? ' È ancora nel periodo «extra».' : ''}`;
+  setDays(days);
 });
 
 /* =========================================================
@@ -530,5 +498,6 @@ if ('serviceWorker' in navigator) {
 }
 
 /* avvio */
+setRangeFill($('#days'));
 updateCook();
-setDays(fresh.days);
+updateFresh();
