@@ -456,15 +456,19 @@ $$('.tab').forEach(t => t.addEventListener('click', () => {
 }));
 $$('[data-close]').forEach(b => b.addEventListener('click', () => { $('#' + b.dataset.close).hidden = true; }));
 
+// Statistiche (GoatCounter): eventi anonimi sull'installazione. Se lo script non è caricato (offline, blocco pubblicità) non fa nulla.
+const conta = nome => { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'uova-' + nome, title: 'uova: ' + nome, event: true }); } catch {} };
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; $('#installBtn').hidden = false; });
 $('#installBtn').addEventListener('click', async () => {
   if (!deferredPrompt) return;
+  conta('installa-clic');
   deferredPrompt.prompt();
-  await deferredPrompt.userChoice.catch(() => {});
+  const scelta = await deferredPrompt.userChoice.catch(() => null);
+  if (scelta && scelta.outcome === 'dismissed') conta('installa-rifiutata');
   deferredPrompt = null; $('#installBtn').hidden = true;
 });
-window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; });
+window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; conta('installata'); });
 
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
